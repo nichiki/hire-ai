@@ -19,8 +19,8 @@ pipx install hire-ai
 # Using pip
 pip install hire-ai
 
-# Using Homebrew (coming soon)
-# brew install nichiki/tap/hire
+# Using Homebrew (macOS)
+brew install nichiki/tap/hire-ai
 ```
 
 ## Prerequisites
