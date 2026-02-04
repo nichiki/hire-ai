@@ -1,0 +1,94 @@
+# hire
+
+CLI to orchestrate AI agents (Claude, Codex, Gemini).
+
+## Installation
+
+```bash
+# Using pipx (recommended)
+pipx install hire
+
+# Using pip
+pip install hire
+
+# Using Homebrew
+brew install nichiki/tap/hire
+```
+
+## Prerequisites
+
+You need at least one of the following CLI tools installed:
+
+- [Claude CLI](https://docs.anthropic.com/claude-code)
+- [Codex CLI](https://github.com/openai/codex)
+- [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+
+## Usage
+
+```bash
+# Basic usage - hire an agent
+hire codex "Design a REST API for a todo app"
+hire gemini "Research the latest React 19 features"
+hire claude "Review this code for security issues"
+
+# Continue a session
+hire -c codex "Tell me more about the authentication"
+hire -s SESSION_ID "Follow up question"
+
+# Name a session for later
+hire -n my-project codex "Start designing the architecture"
+hire -s my-project "What about the database schema?"
+
+# Output as JSON
+hire gemini "Summarize this" --json
+
+# Session management
+hire sessions              # List all sessions
+hire sessions codex        # List Codex sessions only
+hire show SESSION_ID       # Show session details
+hire delete SESSION_ID     # Delete a session
+```
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `-c, --continue` | Continue the latest session |
+| `-s, --session ID` | Continue a specific session |
+| `-n, --name NAME` | Name the session |
+| `-m, --model MODEL` | Specify model to use |
+| `--json` | Output in JSON format |
+
+## Configuration
+
+Config is stored at `~/.config/hire/config.json`:
+
+```json
+{
+  "adapters": {
+    "claude": {
+      "command": "claude",
+      "args": ["--dangerously-skip-permissions"]
+    },
+    "codex": {
+      "command": "codex",
+      "args": ["--full-auto"]
+    },
+    "gemini": {
+      "command": "gemini",
+      "args": ["-y"]
+    }
+  },
+  "defaults": {
+    "agent": "claude"
+  }
+}
+```
+
+## Data Storage
+
+Sessions are stored at `~/.local/share/hire/sessions/`.
+
+## License
+
+MIT
