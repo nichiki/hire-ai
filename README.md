@@ -70,6 +70,10 @@ hire sessions              # List all sessions
 hire sessions codex        # List Codex sessions only
 hire show SESSION_ID       # Show session details
 hire delete SESSION_ID     # Delete a session
+hire delete --all          # Delete all sessions
+
+# Check environment
+hire doctor                # Check installed agents and config
 ```
 
 ## Options

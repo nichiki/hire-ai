@@ -3,13 +3,42 @@
 import sys
 from argparse import Namespace
 
-from ..session import delete_session, find_session
+from ..session import delete_session, find_session, list_sessions
 
 
 def run_delete(args: Namespace) -> int:
     """Run the delete command."""
-    name_or_id = args.name_or_id
+    name_or_id = getattr(args, "name_or_id", None)
+    delete_all = getattr(args, "all", False)
     force = getattr(args, "force", False)
+
+    # Delete all sessions
+    if delete_all:
+        sessions = list_sessions()
+        if not sessions:
+            print("No sessions to delete")
+            return 0
+
+        # Confirm deletion unless --force
+        if not force:
+            print(f"Delete all {len(sessions)} session(s)?")
+            response = input("Type 'yes' to confirm: ")
+            if response.lower() != "yes":
+                print("Cancelled")
+                return 0
+
+        deleted = 0
+        for session in sessions:
+            if delete_session(session):
+                deleted += 1
+
+        print(f"Deleted {deleted} session(s)")
+        return 0
+
+    # Delete single session
+    if not name_or_id:
+        print("Error: Session name or ID required (or use --all)", file=sys.stderr)
+        return 1
 
     session = find_session(name_or_id)
 

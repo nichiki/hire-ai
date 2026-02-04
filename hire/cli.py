@@ -60,7 +60,13 @@ def main() -> int:
     delete_parser = subparsers.add_parser("delete", help="Delete a session")
     delete_parser.add_argument(
         "name_or_id",
+        nargs="?",
         help="Session name or ID",
+    )
+    delete_parser.add_argument(
+        "-a", "--all",
+        action="store_true",
+        help="Delete all sessions",
     )
     delete_parser.add_argument(
         "-f", "--force",
@@ -156,6 +162,7 @@ Usage:
   hire sessions [target]       List sessions
   hire show <name-or-id>       Show session details
   hire delete <name-or-id>     Delete a session
+  hire delete --all            Delete all sessions
   hire doctor                  Check environment
 
 Targets:
