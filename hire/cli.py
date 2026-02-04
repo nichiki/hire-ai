@@ -126,6 +126,11 @@ def run_default() -> int:
         action="store_true",
         help="Output in JSON format",
     )
+    parser.add_argument(
+        "--clip",
+        action="store_true",
+        help="Copy output to clipboard",
+    )
 
     args = parser.parse_args()
     return run_ask(args)
@@ -151,6 +156,7 @@ Options:
   -n, --name NAME    Name the session
   -m, --model MODEL  Specify model
   --json             Output in JSON format
+  --clip             Copy output to clipboard
 
 Examples:
   hire codex "Design a REST API"

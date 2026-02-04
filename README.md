@@ -59,6 +59,9 @@ hire codex "Explain @package.json and @tsconfig.json"
 # Output as JSON
 hire gemini "Summarize this" --json
 
+# Copy to clipboard
+hire codex "Write a function" --clip
+
 # Session management
 hire sessions              # List all sessions
 hire sessions codex        # List Codex sessions only
@@ -75,6 +78,7 @@ hire delete SESSION_ID     # Delete a session
 | `-n, --name NAME` | Name the session |
 | `-m, --model MODEL` | Specify model to use |
 | `--json` | Output in JSON format |
+| `--clip` | Copy output to clipboard |
 
 ## Configuration
 

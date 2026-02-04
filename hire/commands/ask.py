@@ -5,6 +5,7 @@ import sys
 from argparse import Namespace
 
 from ..adapters import get_adapter
+from ..clipboard import copy_to_clipboard
 from ..session import (
     create_session,
     find_session,
@@ -45,6 +46,7 @@ def run_ask(args: Namespace) -> int:
     name = args.name
     model = args.model
     output_json = args.json
+    copy_clip = getattr(args, "clip", False)
 
     # Handle case where target is actually the message (when target is omitted)
     # e.g., "hire 'message'" -> target='message', message=None
@@ -158,8 +160,17 @@ def run_ask(args: Namespace) -> int:
             "agent": target,
             "name": session.get("name"),
         }
-        print(json.dumps(output, indent=2, ensure_ascii=False))
+        output_text = json.dumps(output, indent=2, ensure_ascii=False)
     else:
-        print(result.get("response", ""))
+        output_text = result.get("response", "")
+
+    print(output_text)
+
+    # Copy to clipboard if requested
+    if copy_clip:
+        if copy_to_clipboard(output_text):
+            print("\n(Copied to clipboard)", file=sys.stderr)
+        else:
+            print("\n(Failed to copy to clipboard)", file=sys.stderr)
 
     return 0
