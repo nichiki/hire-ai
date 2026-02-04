@@ -52,6 +52,10 @@ cat main.py | hire codex "Review this code"
 git diff | hire claude "Explain these changes"
 echo "What is 2+2?" | hire gemini
 
+# Attach files (using @filepath - agent feature)
+hire claude "Review @src/main.py for security issues"
+hire codex "Explain @package.json and @tsconfig.json"
+
 # Output as JSON
 hire gemini "Summarize this" --json
 
