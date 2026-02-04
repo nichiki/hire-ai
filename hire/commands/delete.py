@@ -40,7 +40,11 @@ def run_delete(args: Namespace) -> int:
         print("Error: Session name or ID required (or use --all)", file=sys.stderr)
         return 1
 
-    session = find_session(name_or_id)
+    try:
+        session = find_session(name_or_id)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
 
     if not session:
         print(f"Error: Session not found: {name_or_id}", file=sys.stderr)

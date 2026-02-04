@@ -12,7 +12,11 @@ def run_show(args: Namespace) -> int:
     name_or_id = args.name_or_id
     output_json = getattr(args, "json", False)
 
-    session = find_session(name_or_id)
+    try:
+        session = find_session(name_or_id)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
 
     if not session:
         print(f"Error: Session not found: {name_or_id}", file=sys.stderr)

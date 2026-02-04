@@ -29,17 +29,20 @@ class CodexAdapter(AgentAdapter):
             command = resolved
         args = config.get("args", [])
 
-        if session_id:
-            # Resume session: codex exec resume <SESSION_ID> "message"
-            cmd = [command, "exec", "resume", session_id, message, "--json", "--skip-git-repo-check"]
-        else:
-            # New session: codex exec "message"
-            cmd = [command, "exec", message, "--json", "--skip-git-repo-check"]
-
+        # Build command: flags must come before subcommand (resume)
+        # codex exec [FLAGS] [resume <SESSION_ID>] <PROMPT>
+        cmd = [command, "exec", "--json", "--skip-git-repo-check"]
         cmd.extend(args)
 
         if model:
             cmd.extend(["--model", model])
+
+        if session_id:
+            # Resume session
+            cmd.extend(["resume", session_id, message])
+        else:
+            # New session
+            cmd.append(message)
 
         return cmd
 

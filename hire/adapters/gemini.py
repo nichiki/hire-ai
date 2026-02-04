@@ -66,20 +66,13 @@ class GeminiAdapter(AgentAdapter):
                 "raw": result.stdout,
             }
 
-        # Try to parse JSON output
+        # Parse JSON output
         try:
             data = json.loads(result.stdout)
-            # Extract response - structure may vary
-            response_text = ""
-            new_session_id = session_id
+            response_text = data.get("response", data.get("result", data.get("text", "")))
+            new_session_id = data.get("session_id", data.get("sessionId", session_id))
 
-            if isinstance(data, dict):
-                response_text = data.get("result", data.get("response", data.get("text", "")))
-                new_session_id = data.get("session_id", data.get("sessionId", session_id))
-            elif isinstance(data, str):
-                response_text = data
-
-            # For continuation, use "latest" as session identifier
+            # Fall back to "latest" for new sessions if no session_id returned
             if not new_session_id:
                 new_session_id = "latest"
 
@@ -89,9 +82,9 @@ class GeminiAdapter(AgentAdapter):
                 "raw": data,
             }
         except json.JSONDecodeError:
-            # Plain text output
+            # Plain text output or JSON parsing failed
             return {
                 "response": result.stdout.strip(),
-                "session_id": "latest",  # Use "latest" for continuation
+                "session_id": session_id or "latest",
                 "raw": result.stdout,
             }

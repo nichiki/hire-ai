@@ -71,7 +71,11 @@ def run_ask(args: Namespace) -> int:
 
     if session_id:
         # Use specified session
-        existing_session = find_session(session_id)
+        try:
+            existing_session = find_session(session_id)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
         if existing_session:
             cli_session_id = existing_session.get("cli_session_id")
             # If target not specified, get it from session
@@ -82,7 +86,11 @@ def run_ask(args: Namespace) -> int:
             return 1
     elif name:
         # Check if named session exists
-        existing_session = find_session(name)
+        try:
+            existing_session = find_session(name)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
         if existing_session:
             if continue_session:
                 cli_session_id = existing_session.get("cli_session_id")

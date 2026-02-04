@@ -31,12 +31,12 @@ def save_session(session: dict[str, Any]) -> None:
     filename = f"{session['id']}.json"
     filepath = sessions_dir / filename
 
-    with open(filepath, "w") as f:
-        json.dump(session, f, indent=2)
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(session, f, indent=2, ensure_ascii=False)
 
     # Update latest pointer
     latest_path = sessions_dir / "latest.json"
-    with open(latest_path, "w") as f:
+    with open(latest_path, "w", encoding="utf-8") as f:
         json.dump({"session_id": session["id"], "filename": filename}, f)
 
 
@@ -48,23 +48,31 @@ def get_latest_session(agent: str) -> dict[str, Any] | None:
     if not latest_path.exists():
         return None
 
-    with open(latest_path) as f:
-        latest = json.load(f)
+    try:
+        with open(latest_path, encoding="utf-8") as f:
+            latest = json.load(f)
 
-    filepath = sessions_dir / latest["filename"]
-    if not filepath.exists():
+        filepath = sessions_dir / latest["filename"]
+        if not filepath.exists():
+            return None
+
+        with open(filepath, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError, KeyError):
         return None
-
-    with open(filepath) as f:
-        return json.load(f)
 
 
 def get_session_by_id(session_id: str) -> dict[str, Any] | None:
-    """Get a session by its ID (searches all agents)."""
+    """Get a session by its ID (searches all agents).
+
+    Supports prefix matching but raises ValueError if multiple sessions match.
+    """
     sessions_base = get_sessions_dir()
 
     if not sessions_base.exists():
         return None
+
+    matches: list[dict[str, Any]] = []
 
     for agent_dir in sessions_base.iterdir():
         if not agent_dir.is_dir():
@@ -72,10 +80,22 @@ def get_session_by_id(session_id: str) -> dict[str, Any] | None:
         for session_file in agent_dir.glob("*.json"):
             if session_file.name == "latest.json":
                 continue
-            with open(session_file) as f:
-                session = json.load(f)
-                if session["id"] == session_id or session["id"].startswith(session_id):
-                    return session
+            try:
+                with open(session_file, encoding="utf-8") as f:
+                    session = json.load(f)
+                    # Exact match takes priority
+                    if session["id"] == session_id:
+                        return session
+                    # Prefix match
+                    if session["id"].startswith(session_id):
+                        matches.append(session)
+            except (OSError, json.JSONDecodeError, KeyError):
+                continue
+
+    if len(matches) == 1:
+        return matches[0]
+    elif len(matches) > 1:
+        raise ValueError(f"Ambiguous session ID '{session_id}' matches {len(matches)} sessions")
     return None
 
 
@@ -92,10 +112,13 @@ def get_session_by_name(name: str) -> dict[str, Any] | None:
         for session_file in agent_dir.glob("*.json"):
             if session_file.name == "latest.json":
                 continue
-            with open(session_file) as f:
-                session = json.load(f)
-                if session.get("name") == name:
-                    return session
+            try:
+                with open(session_file, encoding="utf-8") as f:
+                    session = json.load(f)
+                    if session.get("name") == name:
+                        return session
+            except (OSError, json.JSONDecodeError):
+                continue
     return None
 
 
@@ -130,8 +153,11 @@ def list_sessions(agent: str | None = None) -> list[dict[str, Any]]:
         for session_file in agent_dir.glob("*.json"):
             if session_file.name == "latest.json":
                 continue
-            with open(session_file) as f:
-                sessions.append(json.load(f))
+            try:
+                with open(session_file, encoding="utf-8") as f:
+                    sessions.append(json.load(f))
+            except (OSError, json.JSONDecodeError):
+                continue
 
     # Sort by updated_at descending
     sessions.sort(key=lambda s: s.get("updated_at", ""), reverse=True)
@@ -146,18 +172,38 @@ def delete_session(session: dict[str, Any]) -> bool:
     for session_file in sessions_dir.glob("*.json"):
         if session_file.name == "latest.json":
             continue
-        with open(session_file) as f:
-            s = json.load(f)
-            if s["id"] == session["id"]:
-                session_file.unlink()
+        try:
+            with open(session_file, encoding="utf-8") as f:
+                s = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
 
-                # Update latest if needed
-                latest_path = sessions_dir / "latest.json"
-                if latest_path.exists():
-                    with open(latest_path) as f:
+        if s["id"] == session["id"]:
+            session_file.unlink()
+
+            # Update latest if needed
+            latest_path = sessions_dir / "latest.json"
+            if latest_path.exists():
+                try:
+                    with open(latest_path, encoding="utf-8") as f:
                         latest = json.load(f)
                     if latest["session_id"] == session["id"]:
-                        latest_path.unlink()
+                        # Find next most recent session for this agent
+                        remaining = list_sessions(session["agent"])
+                        if remaining:
+                            # Update latest to point to most recent remaining
+                            next_session = remaining[0]
+                            with open(latest_path, "w", encoding="utf-8") as f:
+                                json.dump({
+                                    "session_id": next_session["id"],
+                                    "filename": f"{next_session['id']}.json"
+                                }, f)
+                        else:
+                            # No sessions left, remove latest.json
+                            latest_path.unlink()
+                except (OSError, json.JSONDecodeError, KeyError):
+                    # If we can't read latest.json, just try to delete it
+                    latest_path.unlink(missing_ok=True)
 
-                return True
+            return True
     return False
