@@ -6,21 +6,21 @@ CLI to orchestrate AI agents (Claude, Codex, Gemini).
 
 ```bash
 # Using pipx (recommended)
-pipx install hire
+pipx install hire-ai
 
 # Using pip
-pip install hire
+pip install hire-ai
 
-# Using Homebrew
-brew install nichiki/tap/hire
+# Using Homebrew (coming soon)
+# brew install nichiki/tap/hire
 ```
 
 ## Prerequisites
 
 You need at least one of the following CLI tools installed:
 
-- [Claude CLI](https://docs.anthropic.com/claude-code)
-- [Codex CLI](https://github.com/openai/codex)
+- [Claude Code](https://claude.ai/claude-code)
+- [Codex](https://github.com/openai/codex)
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ## Usage
