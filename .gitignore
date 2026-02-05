@@ -73,3 +73,6 @@ dmypy.json
 
 # macOS
 .DS_Store
+
+# Claude Code local skills
+.claude/
